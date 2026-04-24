@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texture Manager Portal - Chungi Hunter 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #FFC107;
+            text-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #FFC107;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .texture-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .texture-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .texture-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .texture-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .texture-preview.empty {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .texture-info {
+            flex: 1;
+        }
+
+        .texture-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .texture-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .texture-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .btn-remove:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-panel {
+            grid-column: 1 / -1;
+        }
+
+        .preview-container {
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .settings-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .settings-group input[type="range"]::-webkit-slider-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FFC107;
+            cursor: pointer;
+        }
+
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #FFC107;
+            font-weight: bold;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 32px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Texture Manager Portal</h1>
+            <p class="subtitle">Upload and manage textures for Chungi Hunter 3D</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Game Elements Panel -->
+            <div class="panel">
+                <h2>Game Elements</h2>
+                <div id="texture-list"></div>
+            </div>
+
+            <!-- Texture Settings Panel -->
+            <div class="panel">
+                <h2>Texture Settings</h2>
+                
+                <div class="settings-group">
+                    <label>Repeat X: <span class="value-display" id="repeat-x-val">1</span></label>
+                    <input type="range" id="repeat-x" min="1" max="50" value="1" step="1">
+                </div>
+
+                <div class="settings-group">
+                    <label>Repeat Y: <span class="value-display" id="repeat-y-val">1</span></label>
+                    <input type="range" id="repeat-y" min="1" max="50" value="1" step="1">
+                </div>
+
+                <div class="settings-group">
+                    <label>Roughness: <span class="value-display" id="roughness-val">0.8</span></label>
+                    <input type="range" id="roughness" min="0" max="1" value="0.8" step="0.1">
+                </div>
+
+                <div class="settings-group">
+                    <label>Metalness: <span class="value-display" id="metalness-val">0.2</span></label>
+                    <input type="range" id="metalness" min="0" max="1" value="0.2" step="0.1">
+                </div>
+
+                <div class="settings-group">
+                    <label>Selected Element: <span class="value-display" id="selected-element">None</span></label>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="panel preview-panel">
+                <h2>Live Preview</h2>
+                <div class="preview-container">
+                    <canvas id="preview-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="save-btn">Save & Export Config</button>
+            <button class="btn btn-secondary" id="launch-game-btn">Launch Game</button>
+            <button class="btn btn-secondary" id="import-btn">Import Config</button>
+        </div>
+    </div>
+
+    <div class="status-message" id="status-message"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Texture configuration storage
+        const textureConfig = {
+            floor: { url: null, repeatX: 50, repeatY: 50, roughness: 0.85, metalness: 0.05 },
+            player: { url: null, repeatX: 1, repeatY: 1, roughness: 0.5, metalness: 0.3 },
+            bot: { url: null, repeatX: 1, repeatY: 1, roughness: 0.5, metalness: 0.3 },
+            chungi: { url: null, repeatX: 1, repeatY: 1, roughness: 0.4, metalness: 0.3 },
+            tree_trunk: { url: null, repeatX: 1, repeatY: 1, roughness: 1.0, metalness: 0 },
+            tree_leaves: { url: null, repeatX: 1, repeatY: 1, roughness: 0.95, metalness: 0 },
+            wall: { url: null, repeatX: 10, repeatY: 5, roughness: 0.8, metalness: 0.05 },
+            sky: { url: null, repeatX: 1, repeatY: 1, roughness: 0, metalness: 0 }
+        };
+
+        const elementNames = {
+            floor: { name: 'Ground/Floor', desc: 'Main arena floor texture' },
+            player: { name: 'Player Character', desc: 'Your character skin' },
+            bot: { name: 'Enemy Bots', desc: 'Enemy character skins' },
+            chungi: { name: 'Chungi Object', desc: 'The throwable chungi' },
+            tree_trunk: { name: 'Tree Trunks', desc: 'Tree trunk texture' },
+            tree_leaves: { name: 'Tree Leaves', desc: 'Tree foliage texture' },
+            wall: { name: 'Arena Walls', desc: 'Boundary wall texture' },
+            sky: { name: 'Skybox', desc: 'Background sky texture' }
+        };
+
+        let selectedElement = null;
+        let previewScene, previewCamera, previewRenderer, previewMesh;
+
+        // Initialize Three.js preview
+        function initPreview() {
+            const canvas = document.getElementById('preview-canvas');
+            previewScene = new THREE.Scene();
+            previewScene.background = new THREE.Color(0x222222);
+
+            previewCamera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            previewCamera.position.set(0, 2, 5);
+
+            previewRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            previewRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            previewScene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            previewScene.add(dirLight);
+
+            // Default preview mesh
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+            previewMesh = new THREE.Mesh(geometry, material);
+            previewScene.add(previewMesh);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (previewMesh) {
+                previewMesh.rotation.y += 0.01;
+            }
+            previewRenderer.render(previewScene, previewCamera);
+        }
+
+        // Render texture list
+        function renderTextureList() {
+            const container = document.getElementById('texture-list');
+            container.innerHTML = '';
+
+            for (const [key, info] of Object.entries(elementNames)) {
+                const item = document.createElement('div');
+                item.className = 'texture-item';
+                item.innerHTML = `
+                    <div class="texture-preview ${textureConfig[key].url ? '' : 'empty'}" id="preview-${key}">
+                        ${textureConfig[key].url ? `<img src="${textureConfig[key].url}" alt="${info.name}">` : 'No Texture'}
+                    </div>
+                    <div class="texture-info">
+                        <div class="texture-name">${info.name}</div>
+                        <div class="texture-desc">${info.desc}</div>
+                    </div>
+                    <div class="texture-actions">
+                        <button class="btn btn-upload" onclick="uploadTexture('${key}')">Upload</button>
+                        ${textureConfig[key].url ? `<button class="btn btn-remove" onclick="removeTexture('${key}')">Remove</button>` : ''}
+                    </div>
+                `;
+                
+                item.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('btn')) {
+                        selectElement(key);
+                    }
+                });
+                
+                container.appendChild(item);
+            }
+        }
+
+        // Select element for editing
+        function selectElement(key) {
+            selectedElement = key;
+            document.getElementById('selected-element').textContent = elementNames[key].name;
+            
+            // Update sliders
+            document.getElementById('repeat-x').value = textureConfig[key].repeatX;
+            document.getElementById('repeat-y').value = textureConfig[key].repeatY;
+            document.getElementById('roughness').value = textureConfig[key].roughness;
+            document.getElementById('metalness').value = textureConfig[key].metalness;
+            
+            updateSliderDisplays();
+            updatePreview();
+            
+            // Highlight selected
+            document.querySelectorAll('.texture-item').forEach(item => {
+                item.style.border = '2px solid transparent';
+            });
+            event.currentTarget.style.border = '2px solid #FFC107';
+        }
+
+        // Upload texture
+        function uploadTexture(key) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        textureConfig[key].url = event.target.result;
+                        renderTextureList();
+                        selectElement(key);
+                        showStatus('Texture uploaded successfully!');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        // Remove texture
+        function removeTexture(key) {
+            textureConfig[key].url = null;
+            renderTextureList();
+            showStatus('Texture removed');
+        }
+
+        // Update preview with current texture
+        function updatePreview() {
+            if (!selectedElement || !textureConfig[selectedElement].url) return;
+
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(textureConfig[selectedElement].url, (texture) => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(
+                    textureConfig[selectedElement].repeatX,
+                    textureConfig[selectedElement].repeatY
+                );
+
+                previewMesh.material = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    roughness: textureConfig[selectedElement].roughness,
+                    metalness: textureConfig[selectedElement].metalness
+                });
+            });
+        }
+
+        // Update slider displays
+        function updateSliderDisplays() {
+            document.getElementById('repeat-x-val').textContent = document.getElementById('repeat-x').value;
+            document.getElementById('repeat-y-val').textContent = document.getElementById('repeat-y').value;
+            document.getElementById('roughness-val').textContent = document.getElementById('roughness').value;
+            document.getElementById('metalness-val').textContent = document.getElementById('metalness').value;
+        }
+
+        // Slider event listeners
+        document.getElementById('repeat-x').addEventListener('input', (e) => {
+            if (selectedElement) {
+                textureConfig[selectedElement].repeatX = parseInt(e.target.value);
+                updateSliderDisplays();
+                updatePreview();
+            }
+        });
+
+        document.getElementById('repeat-y').addEventListener('input', (e) => {
+            if (selectedElement) {
+                textureConfig[selectedElement].repeatY = parseInt(e.target.value);
+                updateSliderDisplays();
+                updatePreview();
+            }
+        });
+
+        document.getElementById('roughness').addEventListener('input', (e) => {
+            if (selectedElement) {
+                textureConfig[selectedElement].roughness = parseFloat(e.target.value);
+                updateSliderDisplays();
+                updatePreview();
+            }
+        });
+
+        document.getElementById('metalness').addEventListener('input', (e) => {
+            if (selectedElement) {
+                textureConfig[selectedElement].metalness = parseFloat(e.target.value);
+                updateSliderDisplays();
+                updatePreview();
+            }
+        });
+
+        // Save configuration
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const dataStr = JSON.stringify(textureConfig, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'texture-config.json';
+            link.click();
+            showStatus('Configuration saved!');
+        });
+
+        // Import configuration
+        document.getElementById('import-btn').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const imported = JSON.parse(event.target.result);
+                            Object.assign(textureConfig, imported);
+                            renderTextureList();
+                            showStatus('Configuration imported!');
+                        } catch (error) {
+                            showStatus('Error importing configuration', true);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        });
+
+        // Launch game with textures
+        document.getElementById('launch-game-btn').addEventListener('click', () => {
+            localStorage.setItem('textureConfig', JSON.stringify(textureConfig));
+            window.open('index.html', '_blank');
+            showStatus('Game launched with custom textures!');
+        });
+
+        // Show status message
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.style.background = isError ? 'rgba(244, 67, 54, 0.9)' : 'rgba(76, 175, 80, 0.9)';
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize
+        initPreview();
+        renderTextureList();
+        updateSliderDisplays();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('preview-canvas');
+            previewCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+            previewCamera.updateProjectionMatrix();
+            previewRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        });
+    </script>
+</body>
+</html>
