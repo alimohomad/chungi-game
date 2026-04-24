@@ -349,7 +349,108 @@
             .desktop-hints { display: none; }
             #menu-overlay h1 { font-size: 48px; }
             .btn { padding: 15px 40px; font-size: 20px; }
+            .circle-btn { width: 85px; height: 85px; font-size: 14px; }
+            .action-btns { bottom: 25px; right: 20px; gap: 14px; }
+            #ui-layer { padding: 12px 14px; font-size: 18px; }
+            .player-info span { font-size: 22px; letter-spacing: 2px; }
+            .bot-info { font-size: 26px; margin-right: 70px; padding: 10px 18px; }
+            #pause-btn { width: 54px; height: 54px; font-size: 24px; }
+            #hud-health, #hud-score { font-size: 14px !important; }
+            #minimap { width: 120px !important; height: 120px !important; }
+            #mobile-hints { display: block; }
         }
+
+        /* Health bar */
+        #hud-health {
+            position: absolute; left: 20px; bottom: 25px; z-index: 60;
+            background: linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45));
+            padding: 10px 14px; border-radius: 12px;
+            border: 2px solid rgba(255, 94, 98, 0.65);
+            backdrop-filter: blur(8px); display: none;
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            font-size: 16px; color: #fff; letter-spacing: 1.5px;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #hud-health .bar {
+            margin-top: 6px;
+            width: 160px; height: 10px; background: rgba(255,255,255,0.18);
+            border-radius: 5px; overflow: hidden;
+        }
+        #hud-health .fill {
+            height: 100%; width: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a, #ffc107, #ff5722);
+            transition: width 0.25s ease;
+        }
+
+        /* Score */
+        #hud-score {
+            position: absolute; top: 95px; right: 20px; z-index: 60;
+            padding: 8px 14px; border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.15));
+            border: 2px solid rgba(255, 193, 7, 0.55);
+            backdrop-filter: blur(8px); display: none;
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            color: #FFC107; font-size: 18px; letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.6);
+            pointer-events: none;
+        }
+
+        /* FPS counter */
+        #fps-counter {
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            z-index: 70; padding: 4px 10px; border-radius: 8px;
+            background: rgba(0,0,0,0.55); color: #4caf50;
+            font-family: 'Orbitron', monospace; font-size: 12px;
+            font-weight: 700; letter-spacing: 1px;
+            display: none; pointer-events: none;
+            text-shadow: 0 0 4px rgba(0,255,0,0.3);
+        }
+
+        /* Minimap */
+        #minimap {
+            position: absolute; right: 20px; bottom: 25px; z-index: 60;
+            width: 160px; height: 160px; border-radius: 14px;
+            background: rgba(0,0,0,0.55);
+            border: 2px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(8px); display: none;
+            pointer-events: none; overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+        }
+
+        /* Mobile hints (shown only on mobile) */
+        #mobile-hints {
+            display: none;
+            position: absolute; top: 160px; left: 50%; transform: translateX(-50%);
+            padding: 8px 16px; border-radius: 20px; z-index: 10;
+            background: linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45));
+            border: 2px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.9); font-size: 12px;
+            font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            pointer-events: none; backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+        body.is-mobile .desktop-hints { display: none !important; }
+        body.is-mobile #mobile-hints.active { display: block; }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: absolute; inset: 0; z-index: 300;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: #FFC107; font-family: 'Orbitron', sans-serif;
+            font-weight: 900; font-size: 24px; letter-spacing: 3px;
+            transition: opacity 0.5s ease;
+        }
+        #loading-overlay .spinner {
+            width: 60px; height: 60px; margin-top: 20px;
+            border: 4px solid rgba(255, 193, 7, 0.3);
+            border-top-color: #FFC107;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -372,8 +473,22 @@
         <div class="player-info"><span>HUNTER</span></div>
         <div class="bot-info" id="bots-left">Bots Left: 8</div>
     </div>
-    
+
+    <div id="hud-health">
+        <span id="hud-health-label">HEALTH</span>
+        <div class="bar"><div class="fill" id="hud-health-fill"></div></div>
+    </div>
+    <div id="hud-score">SCORE <span id="hud-score-val">0</span> · BEST <span id="hud-best-val">0</span></div>
+    <div id="fps-counter">FPS 60</div>
+    <canvas id="minimap" width="160" height="160"></canvas>
+    <div id="mobile-hints">Left drag: move · Right drag: look · Buttons: actions</div>
+
     <div id="pause-btn" style="display: none;">⏸</div>
+
+    <div id="loading-overlay">
+        <div>CHUNGI HUNTER 3D</div>
+        <div class="spinner"></div>
+    </div>
 
     <div id="msg-box"><h2 id="msg-title">BOT ELIMINATED!</h2></div>
 
@@ -479,6 +594,13 @@
             console.log('Music file not found');
         }
 
+        // --- Haptic feedback (mobile only) ---
+        function haptic(pattern) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(pattern); } catch (e) {}
+            }
+        }
+
         // --- Audio System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -506,6 +628,17 @@
                 osc.start(now); osc.stop(now + 0.6);
             }
         }
+
+        // --- Device detection & adaptive quality (used by renderer setup below) ---
+        const IS_MOBILE = (() => {
+            const ua = navigator.userAgent || '';
+            const byUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+            const byTouch = (navigator.maxTouchPoints || 0) > 0 && window.innerWidth <= 900;
+            return byUa || byTouch;
+        })();
+        const HW_CORES = navigator.hardwareConcurrency || 4;
+        const LOW_POWER = IS_MOBILE || HW_CORES <= 4;
+        if (IS_MOBILE) document.body.classList.add('is-mobile');
 
         // --- Three.js Setup (Beautiful Day Mode Shaders & Shadows) ---
         const container = document.getElementById('game-container');
@@ -553,18 +686,19 @@
         scene.fog = new THREE.Fog(0xb0d4f1, 200, 2800); // Better fog color and range 
 
         const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 4000);
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: window.innerWidth > 768, // Disable AA on mobile for performance
+        const renderer = new THREE.WebGLRenderer({
+            antialias: !LOW_POWER,
             powerPreference: "high-performance",
             alpha: false,
             stencil: false,
             depth: true
         });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Lower for better performance
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.shadowMap.autoUpdate = false; // Manual shadow updates for optimization
+        const BASE_PIXEL_RATIO = LOW_POWER ? 1 : Math.min(window.devicePixelRatio, 1.5);
+        renderer.setPixelRatio(BASE_PIXEL_RATIO);
+        renderer.shadowMap.enabled = !LOW_POWER; // Disable shadows on low-power by default
+        renderer.shadowMap.type = LOW_POWER ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+        renderer.shadowMap.autoUpdate = false;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
         renderer.outputEncoding = THREE.sRGBEncoding;
@@ -621,7 +755,8 @@
             opacity: 0.9
         });
         
-        for (let i = 0; i < 25; i++) { // Reduced from 40
+        const CLOUD_COUNT = LOW_POWER ? 10 : 25;
+        for (let i = 0; i < CLOUD_COUNT; i++) {
             let cloudGroup = new THREE.Group();
             let numParts = 3 + Math.floor(Math.random() * 3); // Reduced parts
             for (let j = 0; j < numParts; j++) {
@@ -644,6 +779,126 @@
         // --- REALISTIC EARTH PHYSICS ---
         const GRAVITY = 0.35; 
         const CHUNGI_GRAVITY = 0.35; 
+
+        // --- Procedural canvas textures (defaults; portal textures override later) ---
+        function makeCanvasTexture(size, drawFn) {
+            const c = document.createElement('canvas');
+            c.width = c.height = size;
+            drawFn(c.getContext('2d'), size);
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.anisotropy = 4;
+            return tex;
+        }
+
+        const proceduralTextures = {
+            grass: makeCanvasTexture(256, (g, s) => {
+                const grad = g.createRadialGradient(s/2, s/2, 0, s/2, s/2, s);
+                grad.addColorStop(0, '#6fb661');
+                grad.addColorStop(1, '#4e9345');
+                g.fillStyle = grad; g.fillRect(0, 0, s, s);
+                for (let i = 0; i < 900; i++) {
+                    const x = Math.random() * s, y = Math.random() * s;
+                    const l = 40 + Math.random() * 35;
+                    g.fillStyle = `hsla(${90 + Math.random()*30}, 55%, ${l}%, 0.55)`;
+                    g.fillRect(x, y, 1, 2 + Math.random() * 3);
+                }
+                for (let i = 0; i < 18; i++) {
+                    g.fillStyle = `rgba(40,70,30,${0.05 + Math.random()*0.08})`;
+                    g.beginPath();
+                    g.arc(Math.random()*s, Math.random()*s, 20 + Math.random()*40, 0, Math.PI*2);
+                    g.fill();
+                }
+            }),
+            bark: makeCanvasTexture(128, (g, s) => {
+                g.fillStyle = '#4a3728'; g.fillRect(0, 0, s, s);
+                for (let x = 0; x < s; x += 2) {
+                    const shade = 30 + Math.floor(Math.random() * 60);
+                    g.fillStyle = `rgb(${shade+40},${shade+20},${shade})`;
+                    g.fillRect(x, 0, 2, s);
+                }
+                for (let i = 0; i < 60; i++) {
+                    g.strokeStyle = `rgba(30,20,10,${0.3 + Math.random()*0.4})`;
+                    g.lineWidth = 1 + Math.random() * 1.5;
+                    g.beginPath();
+                    const y = Math.random() * s;
+                    g.moveTo(0, y);
+                    g.bezierCurveTo(s*0.3, y + (Math.random()-0.5)*8, s*0.6, y + (Math.random()-0.5)*8, s, y + (Math.random()-0.5)*4);
+                    g.stroke();
+                }
+            }),
+            leaves: makeCanvasTexture(128, (g, s) => {
+                g.fillStyle = '#2d5016'; g.fillRect(0, 0, s, s);
+                for (let i = 0; i < 400; i++) {
+                    const x = Math.random() * s, y = Math.random() * s;
+                    const r = 2 + Math.random() * 6;
+                    const hue = 95 + Math.random() * 30;
+                    const light = 20 + Math.random() * 30;
+                    g.fillStyle = `hsl(${hue}, 55%, ${light}%)`;
+                    g.beginPath(); g.ellipse(x, y, r, r*0.6, Math.random()*Math.PI, 0, Math.PI*2); g.fill();
+                }
+            }),
+            stone: makeCanvasTexture(256, (g, s) => {
+                g.fillStyle = '#6b6b6b'; g.fillRect(0, 0, s, s);
+                const bw = 64, bh = 32;
+                for (let y = 0; y < s; y += bh) {
+                    const off = (y / bh) % 2 ? bw/2 : 0;
+                    for (let x = -bw; x < s + bw; x += bw) {
+                        const r = 90 + Math.floor(Math.random()*50);
+                        g.fillStyle = `rgb(${r},${r-5},${r-10})`;
+                        g.fillRect(x + off + 1, y + 1, bw - 2, bh - 2);
+                        g.strokeStyle = 'rgba(0,0,0,0.5)';
+                        g.strokeRect(x + off + 1, y + 1, bw - 2, bh - 2);
+                    }
+                }
+                for (let i = 0; i < 200; i++) {
+                    g.fillStyle = `rgba(0,0,0,${Math.random()*0.2})`;
+                    g.fillRect(Math.random()*s, Math.random()*s, 1 + Math.random()*2, 1 + Math.random()*2);
+                }
+            }),
+            rock: makeCanvasTexture(128, (g, s) => {
+                g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, s, s);
+                for (let i = 0; i < 500; i++) {
+                    const r = 60 + Math.floor(Math.random()*80);
+                    g.fillStyle = `rgba(${r},${r},${r},${0.3 + Math.random()*0.4})`;
+                    g.beginPath();
+                    g.arc(Math.random()*s, Math.random()*s, 0.5 + Math.random()*2.5, 0, Math.PI*2);
+                    g.fill();
+                }
+            }),
+            armor: makeCanvasTexture(128, (g, s) => {
+                g.fillStyle = '#ffffff'; g.fillRect(0, 0, s, s);
+                g.strokeStyle = 'rgba(0,0,0,0.28)';
+                g.lineWidth = 2;
+                for (let y = 0; y < s; y += 32) {
+                    g.beginPath(); g.moveTo(0, y); g.lineTo(s, y); g.stroke();
+                }
+                for (let x = 0; x < s; x += 32) {
+                    g.beginPath(); g.moveTo(x, 0); g.lineTo(x, s); g.stroke();
+                }
+                for (let y = 16; y < s; y += 32) {
+                    for (let x = 16; x < s; x += 32) {
+                        g.fillStyle = 'rgba(255,255,255,0.15)';
+                        g.beginPath(); g.arc(x, y, 3, 0, Math.PI*2); g.fill();
+                        g.fillStyle = 'rgba(0,0,0,0.35)';
+                        g.beginPath(); g.arc(x, y, 1.2, 0, Math.PI*2); g.fill();
+                    }
+                }
+            }),
+            chungi: makeCanvasTexture(64, (g, s) => {
+                g.fillStyle = '#0a0a0a'; g.fillRect(0, 0, s, s);
+                g.strokeStyle = '#ffffff';
+                g.lineWidth = 1;
+                for (let i = 0; i < 12; i++) {
+                    g.globalAlpha = 0.12 + Math.random()*0.18;
+                    g.beginPath();
+                    g.moveTo(Math.random()*s, 0);
+                    g.lineTo(Math.random()*s, s);
+                    g.stroke();
+                }
+                g.globalAlpha = 1;
+            })
+        };
         
         // Load texture configuration from portal
         let textureConfig = null;
@@ -659,43 +914,29 @@
 
         const textureLoader = new THREE.TextureLoader();
 
-        // Enhanced floor with better material and subtle vertex displacement
-        const floorGeo = new THREE.PlaneGeometry(ARENA_SIZE, ARENA_SIZE, 80, 80);
-        
-        // Store terrain heights for collision detection
-        const terrainHeights = [];
-        const gridSize = 80;
+        // Enhanced floor with better material and subtle vertex displacement.
+        // Fewer segments on low-power saves lots of vertex work; terrain lookup is analytical.
+        const FLOOR_SEG = LOW_POWER ? 40 : 80;
+        const floorGeo = new THREE.PlaneGeometry(ARENA_SIZE, ARENA_SIZE, FLOOR_SEG, FLOOR_SEG);
         let water = null; // Water pond reference for animation (declare early)
-        
-        // Add subtle terrain variation
+
+        // Displace vertices using the analytical getTerrainHeight formula so
+        // visual terrain matches collision heights exactly.
         const positions = floorGeo.attributes.position;
         for (let i = 0; i < positions.count; i++) {
             const x = positions.getX(i);
-            const y = positions.getY(i);
-            
-            // Flatten water area and make smoother terrain
-            const distFromCenter = Math.hypot(x, y);
-            let noise;
-            
-            if (distFromCenter < 250) {
-                // Flatten water area completely
-                noise = -5; // Slightly below ground level
-            } else {
-                // Smoother terrain with gradual transition
-                const smoothFactor = Math.min(1, (distFromCenter - 250) / 200);
-                noise = Math.sin(x * 0.008) * Math.cos(y * 0.008) * 10 * smoothFactor;
-            }
-            
-            positions.setZ(i, noise);
-            
-            // Store height data for collision
-            terrainHeights.push({ x: x, y: y, height: noise });
+            const y = positions.getY(i); // plane-local y == world z after rotation
+            positions.setZ(i, getTerrainHeight(x, y));
         }
         floorGeo.computeVertexNormals();
         
-        // Apply floor texture if available
+        // Apply floor texture (portal override > procedural default)
+        // Set repeat directly on the procedural grass texture (floor is sole user).
+        proceduralTextures.grass.repeat.set(60, 60);
+        const defaultFloorTex = proceduralTextures.grass;
         const floorMatConfig = { 
-            color: 0x6db86d, // Slightly more vibrant green
+            color: 0xffffff,
+            map: defaultFloorTex,
             roughness: 0.85,
             metalness: 0.05,
             envMapIntensity: 0.3
@@ -717,37 +958,12 @@
         floor.receiveShadow = true;
         scene.add(floor);
         
-        // Function to get terrain height at any x,z position (with interpolation)
+        // Analytical terrain height - O(1), same formula used for floor mesh generation
         function getTerrainHeight(x, z) {
-            // Water area is flat and lower
             const distFromCenter = Math.hypot(x, z);
-            if (distFromCenter < 250) {
-                return -5;
-            }
-            
-            // Find 4 nearest points for smooth interpolation
-            let nearestPoints = [];
-            
-            for (let th of terrainHeights) {
-                let dist = Math.hypot(x - th.x, z - th.y);
-                nearestPoints.push({ height: th.height, dist: dist });
-            }
-            
-            // Sort by distance and take 4 closest
-            nearestPoints.sort((a, b) => a.dist - b.dist);
-            nearestPoints = nearestPoints.slice(0, 4);
-            
-            // Weighted average based on inverse distance
-            let totalWeight = 0;
-            let weightedHeight = 0;
-            
-            for (let p of nearestPoints) {
-                let weight = 1 / (p.dist + 1); // +1 to avoid division by zero
-                weightedHeight += p.height * weight;
-                totalWeight += weight;
-            }
-            
-            return weightedHeight / totalWeight;
+            if (distFromCenter < 250) return -5;
+            const smoothFactor = Math.min(1, (distFromCenter - 250) / 200);
+            return Math.sin(x * 0.008) * Math.cos(z * 0.008) * 10 * smoothFactor;
         }
 
         // Add water pond at center with animated waves
@@ -802,85 +1018,101 @@
             lily.receiveShadow = true;
             scene.add(lily);
         }
+        // --- Instanced grass (single draw call, was 500 individual meshes) ---
+        const GRASS_COUNT = LOW_POWER ? 180 : 500;
         const grassGeo = new THREE.ConeGeometry(3, 12, 3);
-        const grassMat = new THREE.MeshStandardMaterial({ 
-            color: 0x2d5016, 
-            roughness: 1.0, 
+        const grassMat = new THREE.MeshStandardMaterial({
+            color: 0x3a6b1f,
+            roughness: 1.0,
             flatShading: true,
-            metalness: 0
+            metalness: 0,
+            vertexColors: true
         });
-        const grassMat2 = new THREE.MeshStandardMaterial({ 
-            color: 0x3a6b1f, 
-            roughness: 1.0, 
-            flatShading: true,
-            metalness: 0
-        });
-        
-        for(let i = 0; i < 500; i++) { // Increased for better look
-            let gx = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
-            let gz = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
-            
-            // Don't place grass in water pond
-            if (Math.hypot(gx, gz) < 220) continue;
-            
-            let grass = new THREE.Mesh(grassGeo, Math.random() > 0.5 ? grassMat : grassMat2);
-            grass.position.set(gx, 6, gz);
-            grass.rotation.y = Math.random() * Math.PI * 2;
-            grass.scale.set(1, 0.8 + Math.random() * 0.4, 1);
-            grass.castShadow = true;
-            grass.receiveShadow = true;
-            scene.add(grass);
+        const grassMesh = new THREE.InstancedMesh(grassGeo, grassMat, GRASS_COUNT);
+        grassMesh.castShadow = !LOW_POWER; grassMesh.receiveShadow = true;
+        grassMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(GRASS_COUNT * 3), 3);
+        {
+            const dummy = new THREE.Object3D();
+            const cA = new THREE.Color(0x2d5016), cB = new THREE.Color(0x4e9345);
+            let placed = 0, tries = 0;
+            while (placed < GRASS_COUNT && tries < GRASS_COUNT * 5) {
+                tries++;
+                const gx = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
+                const gz = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
+                if (Math.hypot(gx, gz) < 220) continue;
+                dummy.position.set(gx, 6 + getTerrainHeight(gx, gz), gz);
+                dummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+                dummy.scale.set(1, 0.8 + Math.random() * 0.4, 1);
+                dummy.updateMatrix();
+                grassMesh.setMatrixAt(placed, dummy.matrix);
+                const c = Math.random() > 0.5 ? cA : cB;
+                grassMesh.instanceColor.setXYZ(placed, c.r, c.g, c.b);
+                placed++;
+            }
+            grassMesh.count = placed;
+            grassMesh.instanceMatrix.needsUpdate = true;
+            grassMesh.instanceColor.needsUpdate = true;
         }
+        scene.add(grassMesh);
 
-        // Add stones scattered around the arena with better variety
-        const stoneGeo1 = new THREE.DodecahedronGeometry(8, 0);
-        const stoneGeo2 = new THREE.IcosahedronGeometry(10, 0);
-        const stoneGeo3 = new THREE.OctahedronGeometry(12, 0);
-        const stoneMat = new THREE.MeshStandardMaterial({ 
-            color: 0x707070, 
+        // --- Instanced stones (3 variants x 2 shade tints, was 100 individual) ---
+        const STONE_COUNT = LOW_POWER ? 40 : 100;
+        const stoneGeos = [
+            new THREE.DodecahedronGeometry(8, 0),
+            new THREE.IcosahedronGeometry(10, 0),
+            new THREE.OctahedronGeometry(12, 0)
+        ];
+        proceduralTextures.rock.repeat.set(1, 1);
+        const stoneMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            map: proceduralTextures.rock,
             roughness: 0.9,
             metalness: 0.1,
             flatShading: true,
-            envMapIntensity: 0.4
+            envMapIntensity: 0.4,
+            vertexColors: true
         });
-        const stoneMat2 = new THREE.MeshStandardMaterial({ 
-            color: 0x8a8a8a, 
-            roughness: 0.85,
-            metalness: 0.15,
-            flatShading: true,
-            envMapIntensity: 0.4
+        const stoneBuckets = stoneGeos.map(g =>
+            new THREE.InstancedMesh(g, stoneMat, Math.ceil(STONE_COUNT / 3) + 5)
+        );
+        stoneBuckets.forEach(m => {
+            m.castShadow = !LOW_POWER; m.receiveShadow = true;
+            m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(m.count * 3), 3);
+            m.count = 0;
         });
-        
-        for(let i = 0; i < 100; i++) { // Balanced count
-            let sx = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
-            let sz = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
-            
-            // Don't place stones in water pond
-            if (Math.hypot(sx, sz) < 220) continue;
-            
-            // Choose random stone geometry
-            let stoneGeo = [stoneGeo1, stoneGeo2, stoneGeo3][Math.floor(Math.random() * 3)];
-            let stone = new THREE.Mesh(stoneGeo, Math.random() > 0.5 ? stoneMat : stoneMat2);
-            
-            let scale = 0.5 + Math.random() * 1.5;
-            stone.scale.set(scale, scale * 0.7, scale);
-            stone.position.set(sx, scale * 4, sz);
-            stone.rotation.set(
-                Math.random() * Math.PI, 
-                Math.random() * Math.PI, 
-                Math.random() * Math.PI
-            );
-            stone.castShadow = true;
-            stone.receiveShadow = true;
-            scene.add(stone);
+        {
+            const dummy = new THREE.Object3D();
+            const cA = new THREE.Color(0x9a9a9a), cB = new THREE.Color(0x707070);
+            for (let i = 0; i < STONE_COUNT; i++) {
+                const sx = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
+                const sz = (Math.random() - 0.5) * ARENA_SIZE * 0.95;
+                if (Math.hypot(sx, sz) < 220) continue;
+                const bucket = stoneBuckets[Math.floor(Math.random() * 3)];
+                const scale = 0.5 + Math.random() * 1.5;
+                dummy.position.set(sx, scale * 4 + getTerrainHeight(sx, sz), sz);
+                dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                dummy.scale.set(scale, scale * 0.7, scale);
+                dummy.updateMatrix();
+                const idx = bucket.count++;
+                bucket.setMatrixAt(idx, dummy.matrix);
+                const c = Math.random() > 0.5 ? cA : cB;
+                bucket.instanceColor.setXYZ(idx, c.r, c.g, c.b);
+            }
+            stoneBuckets.forEach(m => {
+                m.instanceMatrix.needsUpdate = true;
+                m.instanceColor.needsUpdate = true;
+                scene.add(m);
+            });
         }
 
         // Grid removed for cleaner look
 
-        // Apply wall texture if available
+        // Apply wall texture (portal override > procedural default)
+        proceduralTextures.stone.repeat.set(24, 3);
         const wallMatConfig = { 
-            color: 0x3d7a3d,
-            roughness: 0.8,
+            color: 0xbfbfbf,
+            map: proceduralTextures.stone,
+            roughness: 0.85,
             metalness: 0.05
         };
         
@@ -917,9 +1149,11 @@
         // Realistic Trees with Dense Foliage
         const treeTrunkGeo = new THREE.CylinderGeometry(25, 35, 320, 16); // Higher segments
         
-        // Apply tree trunk texture if available
+        // Apply tree trunk texture (portal override > procedural default)
+        proceduralTextures.bark.repeat.set(2, 4);
         const treeTrunkMatConfig = { 
-            color: 0x4a3728, 
+            color: 0xffffff,
+            map: proceduralTextures.bark,
             roughness: 1.0,
             metalness: 0
         };
@@ -936,105 +1170,109 @@
         
         const treeTrunkMat = new THREE.MeshStandardMaterial(treeTrunkMatConfig);
 
-        // Function to create realistic tree with dense foliage
-        function createRealisticTree(useVariant2) {
-            const treeGroup = new THREE.Group();
-            
-            // Create fresh material for each tree to avoid sharing issues
-            const leafMatConfig = { 
-                color: useVariant2 ? 0x3a6b1f : 0x2d5016, 
-                roughness: 0.95,
-                metalness: 0,
-                side: THREE.DoubleSide
-            };
-            
-            // Apply texture if available
-            if (textureConfig && textureConfig.tree_leaves && textureConfig.tree_leaves.url) {
-                const leavesTexture = textureLoader.load(textureConfig.tree_leaves.url);
-                leavesTexture.wrapS = THREE.RepeatWrapping;
-                leavesTexture.wrapT = THREE.RepeatWrapping;
-                leavesTexture.repeat.set(textureConfig.tree_leaves.repeatX, textureConfig.tree_leaves.repeatY);
-                leafMatConfig.map = leavesTexture;
-                leafMatConfig.roughness = textureConfig.tree_leaves.roughness;
-                leafMatConfig.metalness = textureConfig.tree_leaves.metalness;
-            }
-            
-            const leafMaterial = new THREE.MeshStandardMaterial(leafMatConfig);
-            
-            // Trunk
-            const trunk = new THREE.Mesh(treeTrunkGeo, treeTrunkMat);
-            trunk.position.y = 160;
-            trunk.castShadow = true;
-            trunk.receiveShadow = true;
-            treeGroup.add(trunk);
-            
-            // Create multiple layers of foliage spheres for dense canopy
-            const foliageGeo = new THREE.SphereGeometry(1, 16, 16); // Higher detail sphere
-            
-            // Main canopy structure - multiple overlapping spheres
-            const canopyPositions = [
-                // Center top
-                { x: 0, y: 460, z: 0, scale: 100 },
-                // Upper ring
-                { x: 60, y: 440, z: 0, scale: 80 },
-                { x: -60, y: 440, z: 0, scale: 80 },
-                { x: 0, y: 440, z: 60, scale: 80 },
-                { x: 0, y: 440, z: -60, scale: 80 },
-                // Middle ring
-                { x: 80, y: 400, z: 0, scale: 90 },
-                { x: -80, y: 400, z: 0, scale: 90 },
-                { x: 0, y: 400, z: 80, scale: 90 },
-                { x: 0, y: 400, z: -80, scale: 90 },
-                { x: 60, y: 400, z: 60, scale: 75 },
-                { x: -60, y: 400, z: 60, scale: 75 },
-                { x: 60, y: 400, z: -60, scale: 75 },
-                { x: -60, y: 400, z: -60, scale: 75 },
-                // Lower ring - wider spread
-                { x: 100, y: 360, z: 0, scale: 85 },
-                { x: -100, y: 360, z: 0, scale: 85 },
-                { x: 0, y: 360, z: 100, scale: 85 },
-                { x: 0, y: 360, z: -100, scale: 85 },
-                { x: 70, y: 360, z: 70, scale: 80 },
-                { x: -70, y: 360, z: 70, scale: 80 },
-                { x: 70, y: 360, z: -70, scale: 80 },
-                { x: -70, y: 360, z: -70, scale: 80 },
-                // Bottom fill
-                { x: 50, y: 200, z: 0, scale: 70 },
-                { x: -50, y: 200, z: 0, scale: 70 },
-                { x: 0, y: 200, z: 50, scale: 70 },
-                { x: 0, y: 200, z: -50, scale: 70 }
-            ];
-            
-            for (let pos of canopyPositions) {
-                const foliage = new THREE.Mesh(foliageGeo, leafMaterial);
-                foliage.position.set(pos.x, pos.y, pos.z);
-                foliage.scale.setScalar(pos.scale);
-                foliage.castShadow = true;
-                foliage.receiveShadow = true;
-                treeGroup.add(foliage);
-            }
-            
-            return treeGroup;
+        // Shared leaf material with procedural texture (portal override honored)
+        proceduralTextures.leaves.repeat.set(1, 1);
+        const leafMatConfig = {
+            color: 0xffffff,
+            map: proceduralTextures.leaves,
+            roughness: 0.95,
+            metalness: 0,
+            side: THREE.DoubleSide,
+            vertexColors: true
+        };
+        if (textureConfig && textureConfig.tree_leaves && textureConfig.tree_leaves.url) {
+            const leavesTexture = textureLoader.load(textureConfig.tree_leaves.url);
+            leavesTexture.wrapS = THREE.RepeatWrapping;
+            leavesTexture.wrapT = THREE.RepeatWrapping;
+            leavesTexture.repeat.set(textureConfig.tree_leaves.repeatX, textureConfig.tree_leaves.repeatY);
+            leafMatConfig.map = leavesTexture;
+            leafMatConfig.roughness = textureConfig.tree_leaves.roughness;
+            leafMatConfig.metalness = textureConfig.tree_leaves.metalness;
+        }
+        const leafMat = new THREE.MeshStandardMaterial(leafMatConfig);
+
+        // --- Tree generation: plan positions, then build instanced trunks + foliage ---
+        const TREE_TARGET = LOW_POWER ? 22 : 45;
+        const treeData = [];
+        for (let i = 0; i < TREE_TARGET * 3 && treeData.length < TREE_TARGET; i++) {
+            const tx = (Math.random() - 0.5) * (ARENA_SIZE - 300);
+            const tz = (Math.random() - 0.5) * (ARENA_SIZE - 300);
+            if (Math.hypot(tx, tz) < 250) continue;
+            const rotY = Math.random() * Math.PI * 2;
+            const s = 0.8 + Math.random() * 0.4;
+            const variant2 = Math.random() > 0.5;
+            treeData.push({ tx, tz, rotY, s, variant2 });
+            obstacles.push({ x: tx, z: tz, w: 50, d: 50, mesh: { position: { y: 0 } } });
         }
 
-        for(let i=0; i < 45; i++) {
-            let tx = (Math.random() - 0.5) * (ARENA_SIZE - 300);
-            let tz = (Math.random() - 0.5) * (ARENA_SIZE - 300);
-            
-            // Don't place trees in water pond
-            if (Math.hypot(tx, tz) < 250) continue;
-            
-            let tree = createRealisticTree(Math.random() > 0.5);
-            tree.position.set(tx, 0, tz);
-            
-            // Add slight random rotation and scale variation
-            tree.rotation.y = Math.random() * Math.PI * 2;
-            let scaleVar = 0.8 + Math.random() * 0.4;
-            tree.scale.set(scaleVar, scaleVar, scaleVar);
-            
-            scene.add(tree);
-            obstacles.push({ x: tx, z: tz, w: 50, d: 50, mesh: tree });
+        // Canopy sphere offsets (local to tree root) - used per tree, reused every time.
+        const CANOPY_POSITIONS = [
+            { x: 0, y: 460, z: 0, scale: 100 },
+            { x: 60, y: 440, z: 0, scale: 80 }, { x: -60, y: 440, z: 0, scale: 80 },
+            { x: 0, y: 440, z: 60, scale: 80 }, { x: 0, y: 440, z: -60, scale: 80 },
+            { x: 80, y: 400, z: 0, scale: 90 }, { x: -80, y: 400, z: 0, scale: 90 },
+            { x: 0, y: 400, z: 80, scale: 90 }, { x: 0, y: 400, z: -80, scale: 90 },
+            { x: 60, y: 400, z: 60, scale: 75 }, { x: -60, y: 400, z: 60, scale: 75 },
+            { x: 60, y: 400, z: -60, scale: 75 }, { x: -60, y: 400, z: -60, scale: 75 },
+            { x: 100, y: 360, z: 0, scale: 85 }, { x: -100, y: 360, z: 0, scale: 85 },
+            { x: 0, y: 360, z: 100, scale: 85 }, { x: 0, y: 360, z: -100, scale: 85 },
+            { x: 70, y: 360, z: 70, scale: 80 }, { x: -70, y: 360, z: 70, scale: 80 },
+            { x: 70, y: 360, z: -70, scale: 80 }, { x: -70, y: 360, z: -70, scale: 80 },
+            { x: 50, y: 200, z: 0, scale: 70 }, { x: -50, y: 200, z: 0, scale: 70 },
+            { x: 0, y: 200, z: 50, scale: 70 }, { x: 0, y: 200, z: -50, scale: 70 }
+        ];
+        // Reduce canopy density on low-power for cheaper shading
+        const canopyToUse = LOW_POWER ? CANOPY_POSITIONS.filter((_, i) => i % 2 === 0) : CANOPY_POSITIONS;
+
+        // Instanced trunks: one InstancedMesh for all tree trunks.
+        const trunkMesh = new THREE.InstancedMesh(treeTrunkGeo, treeTrunkMat, treeData.length);
+        trunkMesh.castShadow = !LOW_POWER; trunkMesh.receiveShadow = true;
+
+        // Instanced foliage: one InstancedMesh total across all trees.
+        const foliageGeo = new THREE.SphereGeometry(1, LOW_POWER ? 8 : 12, LOW_POWER ? 8 : 12);
+        const foliageMesh = new THREE.InstancedMesh(foliageGeo, leafMat, treeData.length * canopyToUse.length);
+        foliageMesh.castShadow = !LOW_POWER; foliageMesh.receiveShadow = true;
+        foliageMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(treeData.length * canopyToUse.length * 3), 3);
+
+        {
+            const dummy = new THREE.Object3D();
+            const cA = new THREE.Color(0x2d5016), cB = new THREE.Color(0x3a6b1f);
+            let foliageIdx = 0;
+            for (let i = 0; i < treeData.length; i++) {
+                const t = treeData[i];
+                // Trunk instance (center at trunk base y=0; trunkGeo centered at 160)
+                dummy.position.set(t.tx, 160 * t.s, t.tz);
+                dummy.rotation.set(0, t.rotY, 0);
+                dummy.scale.set(t.s, t.s, t.s);
+                dummy.updateMatrix();
+                trunkMesh.setMatrixAt(i, dummy.matrix);
+
+                const tintBase = t.variant2 ? cB : cA;
+                for (let j = 0; j < canopyToUse.length; j++) {
+                    const p = canopyToUse[j];
+                    const cos = Math.cos(t.rotY), sin = Math.sin(t.rotY);
+                    const lx = p.x * cos - p.z * sin;
+                    const lz = p.x * sin + p.z * cos;
+                    dummy.position.set(t.tx + lx * t.s, p.y * t.s, t.tz + lz * t.s);
+                    dummy.rotation.set(0, 0, 0);
+                    dummy.scale.setScalar(p.scale * t.s);
+                    dummy.updateMatrix();
+                    foliageMesh.setMatrixAt(foliageIdx, dummy.matrix);
+                    const lerp = Math.random() * 0.3;
+                    foliageMesh.instanceColor.setXYZ(foliageIdx,
+                        tintBase.r + lerp * (cB.r - tintBase.r),
+                        tintBase.g + lerp * (cB.g - tintBase.g),
+                        tintBase.b + lerp * (cB.b - tintBase.b));
+                    foliageIdx++;
+                }
+            }
+            foliageMesh.count = foliageIdx;
+            trunkMesh.instanceMatrix.needsUpdate = true;
+            foliageMesh.instanceMatrix.needsUpdate = true;
+            foliageMesh.instanceColor.needsUpdate = true;
         }
+        scene.add(trunkMesh);
+        scene.add(foliageMesh);
 
         // --- REALISTIC CHARACTER MODELS (Head, Torso, Arms, Legs) ---
         const particles3D = [];
@@ -1043,9 +1281,11 @@
         function createPlayerMesh(colorHex, isMainPlayer=false) {
             const group = new THREE.Group();
             
-            // Apply player/bot texture if available
+            // Apply player/bot texture (portal override > procedural armor default)
+            proceduralTextures.armor.repeat.set(2, 2);
             const matConfig = { 
-                color: colorHex, 
+                color: colorHex,
+                map: proceduralTextures.armor,
                 roughness: 0.5,
                 metalness: 0.3,
                 envMapIntensity: 0.5
@@ -1113,12 +1353,16 @@
         // --- Chungi Object - Combined 5-6 Circle Mesh Type ---
         const chungiGroup = new THREE.Group();
         
-        // Apply chungi texture if available
+        // Apply chungi texture (portal override > procedural default)
+        proceduralTextures.chungi.repeat.set(1, 1);
         const chungiMatConfig = { 
-            color: 0x000000, // Pure black color
+            color: 0x222222,
+            map: proceduralTextures.chungi,
             roughness: 0.6,
             metalness: 0.2,
-            envMapIntensity: 0.4
+            envMapIntensity: 0.4,
+            emissive: 0x000000,
+            emissiveIntensity: 1.0
         };
         
         if (textureConfig && textureConfig.chungi && textureConfig.chungi.url) {
@@ -1337,7 +1581,144 @@
         let lastDashTime = 0;
         const DASH_COOLDOWN = 10000; 
         const DASH_DURATION = 300;
-        let hasPlayedIntro = false; // Track if intro cinematic has played 
+        let hasPlayedIntro = false; // Track if intro cinematic has played
+
+        // --- Player stats + score + FPS + minimap HUD ---
+        const STARTING_HEALTH = 3;
+        let playerStats = {
+            health: STARTING_HEALTH,
+            maxHealth: STARTING_HEALTH,
+            score: 0,
+            best: parseInt(localStorage.getItem('chungiBest') || '0', 10) || 0,
+            hitCooldown: 0
+        };
+
+        const hudHealthEl = document.getElementById('hud-health');
+        const hudHealthFill = document.getElementById('hud-health-fill');
+        const hudScoreEl = document.getElementById('hud-score');
+        const hudScoreVal = document.getElementById('hud-score-val');
+        const hudBestVal = document.getElementById('hud-best-val');
+        const fpsCounterEl = document.getElementById('fps-counter');
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        const mobileHintsEl = document.getElementById('mobile-hints');
+
+        hudBestVal.textContent = playerStats.best;
+
+        function updateScoreHud() {
+            hudScoreVal.textContent = playerStats.score;
+            hudBestVal.textContent = playerStats.best;
+        }
+        function updateHealthHud() {
+            const pct = Math.max(0, playerStats.health / playerStats.maxHealth) * 100;
+            hudHealthFill.style.width = pct + '%';
+        }
+
+        function damagePlayer() {
+            if (playerStats.hitCooldown > 0) return;
+            playerStats.health = Math.max(0, playerStats.health - 1);
+            playerStats.hitCooldown = 60; // ~1s invulnerability
+            updateHealthHud();
+            haptic([80, 40, 80]);
+            playSound('hit');
+            // Brief red screen flash via body filter
+            document.body.style.transition = 'filter 0.1s';
+            document.body.style.filter = 'brightness(1.35) saturate(1.4) hue-rotate(-20deg)';
+            setTimeout(() => { document.body.style.filter = ''; }, 200);
+        }
+
+        function awardScore(amount) {
+            playerStats.score += amount;
+            if (playerStats.score > playerStats.best) {
+                playerStats.best = playerStats.score;
+                try { localStorage.setItem('chungiBest', String(playerStats.best)); } catch (e) {}
+            }
+            updateScoreHud();
+        }
+
+        // Minimap renderer (called at ~10Hz, not every frame)
+        function drawMinimap() {
+            const c = minimapCtx;
+            const w = minimapCanvas.width, h = minimapCanvas.height;
+            const half = ARENA_SIZE / 2;
+            const sx = w / ARENA_SIZE;
+            c.clearRect(0, 0, w, h);
+            c.fillStyle = 'rgba(20,40,20,0.7)';
+            c.fillRect(0, 0, w, h);
+            // Water
+            c.fillStyle = 'rgba(74,144,196,0.55)';
+            c.beginPath();
+            c.arc(w/2, h/2, (200) * sx, 0, Math.PI * 2);
+            c.fill();
+            if (!p1) return;
+            // Bots
+            for (const b of bots) {
+                c.fillStyle = b.hasChungi ? '#FFC107' : '#ff5e62';
+                const bx = (b.x + half) * sx;
+                const bz = (b.z + half) * sx;
+                c.beginPath();
+                c.arc(bx, bz, 3, 0, Math.PI * 2);
+                c.fill();
+            }
+            // Chungi
+            if (chungi) {
+                c.fillStyle = chungi.state === 'flying' ? '#FFEB3B' : '#ffffff';
+                const cx = (chungi.x + half) * sx;
+                const cz = (chungi.z + half) * sx;
+                c.beginPath();
+                c.arc(cx, cz, 2.5, 0, Math.PI * 2);
+                c.fill();
+            }
+            // Player
+            const px = (p1.x + half) * sx;
+            const pz = (p1.z + half) * sx;
+            c.fillStyle = '#4facfe';
+            c.beginPath();
+            c.arc(px, pz, 4, 0, Math.PI * 2);
+            c.fill();
+            // Player facing
+            c.strokeStyle = '#4facfe';
+            c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(px, pz);
+            c.lineTo(px + Math.sin(p1.mesh.rotation.y) * 10, pz + Math.cos(p1.mesh.rotation.y) * 10);
+            c.stroke();
+        }
+
+        // FPS counter + adaptive quality
+        let fpsSamples = [];
+        let lastFpsTime = performance.now();
+        let qualityAutoDropped = false;
+        function tickFps(now) {
+            const dt = now - lastFpsTime;
+            lastFpsTime = now;
+            if (dt > 0 && dt < 500) {
+                fpsSamples.push(1000 / dt);
+                if (fpsSamples.length > 60) fpsSamples.shift();
+            }
+        }
+        let hudFpsAcc = 0;
+        function maybeUpdateFpsDisplay(now) {
+            hudFpsAcc += 1;
+            if (hudFpsAcc < 30) return;
+            hudFpsAcc = 0;
+            if (fpsSamples.length < 10) return;
+            const avg = fpsSamples.reduce((a,b) => a+b, 0) / fpsSamples.length;
+            fpsCounterEl.textContent = 'FPS ' + Math.round(avg);
+            fpsCounterEl.style.color = avg < 30 ? '#ff5e62' : avg < 50 ? '#ffc107' : '#4caf50';
+            // Auto-drop quality once if FPS is persistently poor
+            if (!qualityAutoDropped && avg < 28 && gameState === 'PLAYING' && graphicsSettings.quality !== 'low') {
+                qualityAutoDropped = true;
+                graphicsSettings.quality = 'low';
+                graphicsSettings.shadows = 'off';
+                applyGraphicsSettings();
+                const q = document.getElementById('graphics-quality');
+                const s = document.getElementById('shadow-quality');
+                if (q) q.value = 'low';
+                if (s) s.value = 'off';
+                saveSettings();
+            }
+        }
 
         function initGame() {
             // Initialize game objects first
@@ -1386,7 +1767,22 @@
             document.getElementById('btn-dash').classList.remove('cooldown');
             document.getElementById('btn-dash').innerText = "DASH";
             chargeBarContainer.style.display = 'none';
-            
+
+            // Reset player stats, show HUD
+            playerStats.health = playerStats.maxHealth;
+            playerStats.score = 0;
+            playerStats.hitCooldown = 0;
+            updateHealthHud();
+            updateScoreHud();
+            hudHealthEl.style.display = 'block';
+            hudScoreEl.style.display = 'block';
+            fpsCounterEl.style.display = 'block';
+            minimapCanvas.style.display = 'block';
+            if (IS_MOBILE) {
+                mobileHintsEl.classList.add('active');
+                setTimeout(() => mobileHintsEl.classList.remove('active'), 4000);
+            }
+
             // Only play intro cinematic on first game start
             if (!hasPlayedIntro) {
                 gameState = 'COUNTDOWN';
@@ -1474,7 +1870,8 @@
             let now = Date.now();
             if (now - lastDashTime >= DASH_COOLDOWN || lastDashTime === 0) {
                 lastDashTime = now;
-                playSound('jump'); 
+                playSound('jump');
+                haptic(40);
                 
                 const btn = document.getElementById('btn-dash');
                 btn.classList.add('cooldown');
@@ -1495,9 +1892,10 @@
         function jump() {
             if(gameState !== 'PLAYING' && gameState !== 'COUNTDOWN') return;
             let terrainHeight = getTerrainHeight(p1.x, p1.z);
-            if(Math.abs(p1.y - terrainHeight) < 1) { // Check if on ground
-                playSound('jump'); 
-                p1.vy = 5; // Reduced from 9 to 5 for lower jump
+            if(Math.abs(p1.y - terrainHeight) < 1) { // on ground
+                playSound('jump');
+                haptic(25);
+                p1.vy = 5;
             }
         }
 
@@ -1512,6 +1910,7 @@
             chargeBarContainer.style.display = 'none';
             
             playSound('kick');
+            haptic(30);
             chungi.state = 'flying';
             chungi.holder = 'player'; // Track that player threw it
             
@@ -1578,8 +1977,15 @@
         function eliminateBot(index) {
             const bot = bots[index];
             spawnParticles(bot.x, bot.y, bot.z, 0xff5e62);
+            // Dispose bot mesh to avoid leaks
+            bot.mesh.traverse(o => {
+                if (o.geometry) o.geometry.dispose && o.geometry.dispose();
+            });
             scene.remove(bot.mesh);
             bots.splice(index, 1);
+
+            awardScore(100);
+            haptic(60);
 
             document.getElementById('bots-left').innerText = `Bots Left: ${bots.length}`;
             const msgBox = document.getElementById('msg-box');
@@ -1588,9 +1994,12 @@
 
             if(bots.length === 0) {
                 gameState = 'GAME_OVER';
+                // Survival bonus: remaining health × 250
+                awardScore(250 * playerStats.health);
+                haptic([40, 60, 40, 60, 120]);
                 setTimeout(() => {
                     msgBox.style.display = 'none';
-                    document.getElementById('winner-text').innerText = 'ALL BOTS DESTROYED!';
+                    document.getElementById('winner-text').innerText = `VICTORY! SCORE ${playerStats.score}`;
                     document.getElementById('winner-text').style.color = '#4facfe';
                     document.getElementById('gameover-overlay').style.display = 'flex';
                     document.getElementById('touch-zone').style.display = 'none';
@@ -1626,6 +2035,9 @@
         let frameCount = 0;
         function updatePhysics() {
             frameCount++;
+
+            // Tick damage cooldown
+            if (playerStats.hitCooldown > 0) playerStats.hitCooldown--;
             
             // Check if cinematic mode should end
             if (cinematicMode && Date.now() - cinematicStartTime > CINEMATIC_DURATION) {
@@ -2107,23 +2519,32 @@
                                 // Bot threw it - check if it hits player
                                 let distToPlayer = Math.hypot(chungi.x - p1.x, chungi.y - (p1.y + 20), chungi.z - p1.z);
                                 if (distToPlayer < chungi.radius + p1.radius + 15) {
-                                    // Player hit by bot's throw - GAME OVER!
-                                    gameState = 'GAME_OVER';
-                                    playSound('explosion');
-                                    spawnParticles(p1.x, p1.y, p1.z, 0x4facfe);
-                                    
-                                    setTimeout(() => {
-                                        document.getElementById('winner-text').innerText = 'BOT HIT YOU WITH CHUNGI!';
-                                        document.getElementById('winner-text').style.color = '#ff5e62';
-                                        document.getElementById('gameover-overlay').style.display = 'flex';
-                                        document.getElementById('touch-zone').style.display = 'none';
-                                        document.getElementById('action-btns').style.display = 'none';
-                                        document.getElementById('pause-btn').style.display = 'none';
-                                        document.getElementById('crosshair').style.display = 'none';
-                                        chargeBarContainer.style.display = 'none';
-                                        if(isPointerLocked) document.exitPointerLock();
-                                    }, 500);
-                                    return;
+                                    // Player hit by bot's throw - damage with invuln
+                                    if (playerStats.hitCooldown === 0) {
+                                        damagePlayer();
+                                        // Knockback the chungi, bounce away
+                                        chungi.vy = 10;
+                                        chungi.vx *= -0.5; chungi.vz *= -0.5;
+                                        chungi.state = 'ground';
+                                        spawnParticles(p1.x, p1.y, p1.z, 0x4facfe);
+                                        if (playerStats.health <= 0) {
+                                            gameState = 'GAME_OVER';
+                                            playSound('explosion');
+                                            setTimeout(() => {
+                                                document.getElementById('winner-text').innerText = `DEFEATED! SCORE ${playerStats.score}`;
+                                                document.getElementById('winner-text').style.color = '#ff5e62';
+                                                document.getElementById('gameover-overlay').style.display = 'flex';
+                                                document.getElementById('touch-zone').style.display = 'none';
+                                                document.getElementById('action-btns').style.display = 'none';
+                                                document.getElementById('pause-btn').style.display = 'none';
+                                                document.getElementById('crosshair').style.display = 'none';
+                                                chargeBarContainer.style.display = 'none';
+                                                if(isPointerLocked) document.exitPointerLock();
+                                            }, 500);
+                                            return;
+                                        }
+                                        break;
+                                    }
                                 } else {
                                     // Bot hit another bot
                                     if (dotProduct < 0) {
@@ -2173,11 +2594,17 @@
 
         function animate() {
             requestAnimationFrame(animate);
+
+            // Skip simulation & render when tab hidden to save CPU/battery.
+            if (document.hidden) return;
+
+            const now = performance.now();
+            tickFps(now);
+
             updatePhysics();
             
             // Render skybox first (if exists) with its own camera
             if (skyboxMesh) {
-                // Sync sky camera rotation with main camera but not position
                 skyCamera.rotation.copy(camera.rotation);
                 renderer.autoClear = false;
                 renderer.clear();
@@ -2185,6 +2612,12 @@
                 renderer.render(scene, camera);
             } else {
                 renderer.render(scene, camera);
+            }
+
+            // Post-render: throttled HUD updates
+            if (gameState === 'PLAYING' || gameState === 'COUNTDOWN') {
+                if (frameCount % 6 === 0) drawMinimap();
+                maybeUpdateFpsDisplay(now);
             }
         }
 
@@ -2208,6 +2641,10 @@
         document.getElementById('menu-gameover-btn').addEventListener('click', () => {
             document.getElementById('gameover-overlay').style.display = 'none';
             document.getElementById('menu-overlay').style.display = 'flex';
+            hudHealthEl.style.display = 'none';
+            hudScoreEl.style.display = 'none';
+            fpsCounterEl.style.display = 'none';
+            minimapCanvas.style.display = 'none';
             gameState = 'MENU';
         });
         
@@ -2239,6 +2676,10 @@
             document.getElementById('touch-zone').style.display = 'none';
             document.getElementById('action-btns').style.display = 'none';
             document.getElementById('pause-btn').style.display = 'none';
+            hudHealthEl.style.display = 'none';
+            hudScoreEl.style.display = 'none';
+            fpsCounterEl.style.display = 'none';
+            minimapCanvas.style.display = 'none';
             gameState = 'MENU';
         });
         
@@ -2256,39 +2697,65 @@
             }
         });
         
-        // Graphics settings
-        let graphicsSettings = {
-            quality: 'medium',
-            shadows: 'medium',
-            cameraDistance: 220 // Closer camera (was 380)
-        };
-        
+        // Graphics settings - defaults adapt to device, persisted via localStorage
+        let graphicsSettings = loadSettings();
+
+        function loadSettings() {
+            const defaults = {
+                quality: LOW_POWER ? 'low' : 'medium',
+                shadows: LOW_POWER ? 'off' : 'medium',
+                cameraDistance: 220
+            };
+            try {
+                const saved = JSON.parse(localStorage.getItem('chungiSettings') || '{}');
+                return { ...defaults, ...saved };
+            } catch (e) { return defaults; }
+        }
+        function saveSettings() {
+            try { localStorage.setItem('chungiSettings', JSON.stringify(graphicsSettings)); } catch (e) {}
+        }
+
+        // Apply initial UI state from settings
+        (() => {
+            const q = document.getElementById('graphics-quality');
+            if (q) q.value = graphicsSettings.quality;
+            const s = document.getElementById('shadow-quality');
+            if (s) s.value = graphicsSettings.shadows;
+            const c = document.getElementById('camera-distance');
+            if (c) {
+                const dist = graphicsSettings.cameraDistance;
+                c.value = dist <= 180 ? 'close' : dist >= 280 ? 'far' : 'medium';
+            }
+        })();
+
         document.getElementById('graphics-quality').addEventListener('change', (e) => {
             graphicsSettings.quality = e.target.value;
-            applyGraphicsSettings();
+            applyGraphicsSettings(); saveSettings();
         });
         
         document.getElementById('shadow-quality').addEventListener('change', (e) => {
             graphicsSettings.shadows = e.target.value;
-            applyGraphicsSettings();
+            applyGraphicsSettings(); saveSettings();
         });
         
         document.getElementById('camera-distance').addEventListener('change', (e) => {
-            const distances = { close: 180, medium: 220, far: 300 }; // All closer
+            const distances = { close: 180, medium: 220, far: 300 };
             graphicsSettings.cameraDistance = distances[e.target.value];
+            saveSettings();
         });
         
         function applyGraphicsSettings() {
-            // Apply graphics quality
+            // Apply graphics quality (respects mobile cap)
+            const mobileCap = LOW_POWER ? 1 : 2;
             if (graphicsSettings.quality === 'low') {
-                renderer.setPixelRatio(1);
-                scene.fog.far = 2000;
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+                scene.fog.far = LOW_POWER ? 1600 : 2000;
             } else if (graphicsSettings.quality === 'medium') {
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-                scene.fog.far = 2800;
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, Math.min(1.5, mobileCap)));
+                scene.fog.far = LOW_POWER ? 2200 : 2800;
             } else {
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                scene.fog.far = 3500;
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileCap));
+                scene.fog.far = LOW_POWER ? 2600 : 3500;
             }
             
             // Apply shadow quality
@@ -2297,12 +2764,33 @@
             } else {
                 renderer.shadowMap.enabled = true;
                 const shadowSizes = { low: 1024, medium: 2048, high: 4096 };
-                const size = shadowSizes[graphicsSettings.shadows];
+                const size = Math.min(shadowSizes[graphicsSettings.shadows], LOW_POWER ? 1024 : 4096);
                 dirLight.shadow.mapSize.width = size;
                 dirLight.shadow.mapSize.height = size;
                 dirLight.shadow.map = null; // Force regeneration
             }
+            renderer.shadowMap.needsUpdate = true;
         }
+        applyGraphicsSettings();
+
+        // Pause rendering when tab hidden (saves battery/CPU on mobile).
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                document.getElementById('pause-overlay').style.display = 'flex';
+                if (isPointerLocked) document.exitPointerLock();
+                if (backgroundMusic && !backgroundMusic.paused) backgroundMusic.pause();
+            }
+        });
+
+        // Hide loading overlay as soon as animation starts
+        requestAnimationFrame(() => {
+            const lo = document.getElementById('loading-overlay');
+            if (lo) {
+                lo.style.opacity = '0';
+                setTimeout(() => lo.remove(), 500);
+            }
+        });
 
         animate();
 
